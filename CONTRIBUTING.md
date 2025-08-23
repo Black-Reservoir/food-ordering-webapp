@@ -29,7 +29,7 @@ Thank you for your interest in contributing! 🚀
 - `fix/your-fix-name` → Bug fixes
 
 ## 💬 Communication
-- Use the dedicated **#project-questions** channel in Discord for project-related questions.
+- Use the dedicated **#project-queries** channel in Discord for project-related questions.
 - Be respectful and collaborative.
 
 ---
