@@ -5,7 +5,14 @@ Thank you for your interest in contributing! 🚀
 ## 📌 How to Contribute
 
 1. **Clone the repository** to your local machine (no need to fork if you’re part of the org).
-2. Create a **new branch** for your feature or bugfix:
+
+2. Make sure you’re up to date with the latest changes:
+
+   ```bash
+   git pull origin dev
+   ```
+
+3. Create a **new branch** for your feature or bugfix:
 
    ```bash
    git checkout -b feature/task-123-short-description-frontend
@@ -14,17 +21,27 @@ Thank you for your interest in contributing! 🚀
 
    * Replace `123` with your task ID (from GitHub Project Board/Issue).
    * Use `frontend` or `backend` depending on the scope of your work.
-3. Make your changes and **commit** with a clear message:
+   * If the branch already exists on remote but not locally, you can check it out directly:
+
+     ```bash
+     git checkout branch-name
+     ```
+
+     (Git will automatically track `origin/branch-name`.)
+
+4. Make your changes and **commit** with a clear message:
 
    ```bash
    git commit -m "Add: short description of changes"
    ```
-4. **Push** your branch to GitHub:
+
+5. **Push** your branch to GitHub:
 
    ```bash
    git push origin feature/task-123-short-description-frontend
    ```
-5. Open a **Pull Request (PR)** and describe your changes.
+
+6. Open a **Pull Request (PR)** into the `dev` branch and describe your changes.
 
 ## ✅ Guidelines
 
@@ -43,6 +60,20 @@ Thank you for your interest in contributing! 🚀
 
 * Use the dedicated **#project-queries** channel in Discord for project-related questions.
 * Be respectful and collaborative.
+
+---
+
+## 🔀 Workflow Overview
+
+```text
+ main  ←  production-ready branch
+   ↑
+   └── dev  ←  integration branch for features & fixes
+         ↑
+         └── feature/task-123-short-description-frontend
+         └── feature/task-123-short-description-backend
+         └── fix/task-123-short-description
+```
 
 ---
 
