@@ -1,6 +1,6 @@
 # 🛠 Project Setup Guide
 
-This guide will help you set up the **Online Food Ordering Web App** locally, both for backend (Laravel) and frontend (Vue/React depending on implementation).
+This guide will help you set up the **Online Food Ordering Web App** locally, both for backend (Laravel) and frontend (React depending on implementation).
 
 ---
 
@@ -68,7 +68,7 @@ Before starting, make sure you have the following installed:
 
 ---
 
-## 🎨 Frontend Setup (Vue/React)
+## 🎨 Frontend Setup (React)
 
 1. **Go to frontend folder:**
 
