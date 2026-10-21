@@ -13,13 +13,24 @@ Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'
     ->middleware('throttle:5,1')
     ->name('password.forgot');
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
+    ->middleware('throttle:5,1')
     ->name('password.reset');
 
+Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
+    ->middleware(['signed'])->name('verification.verify');
+
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    // Route::get('/me', function (Request $request) {
+    //     $user = $request->user();
+
+    //     return response()->json([
+    //         'user' => $user,
+    //     ]);
+    // });
+
     Route::post('/email/verification-notification', [VerifyEmailController::class, 'resend'])
         ->middleware(['throttle:6,1'])->name('verification.send');;
-    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
-        ->middleware(['signed'])->name('verification.verify');
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
