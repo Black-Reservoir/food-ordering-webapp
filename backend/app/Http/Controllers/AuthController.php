@@ -3,70 +3,112 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
-            'role' => ['required', 'in:customer,restaurant,admin']
-        ]);
+        $data = $request->validated();
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'address' => $data['address'] ?? null,
         ]);
 
+        $user['role'] = 'customer';
+        $user->save();
 
         event(new Registered($user));
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
         return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ]);
+            'message' => "Registration successful",
+            'user' => new UserResource($user),
+        ], 201);
+        // return new UserResource($user);
+        // $validated = $request->validate([
+        //     'name' => ['required', 'string', 'max:255'],
+        //     'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+        //     'password' => ['required', 'confirmed', Password::defaults()],
+        //     'role' => ['required', 'in:customer,restaurant,admin']
+        // ]);
+
+        // $user = User::create([
+        //     'name' => $validated['name'],
+        //     'email' => $validated['email'],
+        //     'password' => Hash::make($validated['password']),
+        //     'role' => $validated['role'],
+        // ]);
+
+
+        // event(new Registered($user));
+
+        // $token = $user->createToken('auth_token')->plainTextToken;
+
+        // return response()->json([
+        //     'user' => $user,
+        //     'token' => $token,
+        // ]);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
+        $data = $request->validated();
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $data['email'])->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Invalid credentials'],
-            ]);
+        if (!$user || !Hash::check($data['password'], $user->password)) {
+            return response()->json([
+                'message' => 'Invalid credentials'
+            ], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('token')->plainTextToken;
 
         return response()->json([
-            'message' => "Login Successful",
-            'user' => $user,
+            'message' => 'Login successfull',
             'token' => $token,
-        ]);
+            'user' => new UserResource($user)
+        ], 200);
+        // $request->validate([
+        //     'email' => 'required|email',
+        //     'password' => 'required'
+        // ]);
+
+        // $user = User::where('email', $request->email)->first();
+
+        // if (! $user || ! Hash::check($request->password, $user->password)) {
+        //     throw ValidationException::withMessages([
+        //         'email' => ['Invalid credentials'],
+        //     ]);
+        // }
+
+        // $token = $user->createToken('auth_token')->plainTextToken;
+
+        // return response()->json([
+        //     'message' => "Login Successful",
+        //     'user' => $user,
+        //     'token' => $token,
+        // ]);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
+        $user = $request->user();
+        $user->currentAccessToken()->delete();
 
-        return response()->json(['message' => "Logged out successfully"]);
+
+        return response()->json([
+            'message' => "Logged out successfully"
+        ], 200);
     }
 }
