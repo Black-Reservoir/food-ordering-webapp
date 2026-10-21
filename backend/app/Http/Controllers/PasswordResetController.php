@@ -3,56 +3,76 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Requests\ResetPasswordRequest;
+use App\Models\User;
+use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Validation\Rules\Password as RulesPassword;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PasswordResetController extends Controller
 {
-    public function sendResetLink(Request $request)
+    public function sendResetLink(ForgotPasswordRequest $request)
     {
-        $request->validate([
-            'email' => ['required', 'email', 'exists:users,email'],
-        ]);
+        $data = $request->validated();
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        $status = Password::sendResetLink($data);
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(['message' => __($status)], 200);
-        } else {
-            return response()->json(['message' => __($status)], 422);
-        }
+        return response()->json([
+            'message' => 'If the email exists, a password reset link has been sent.'
+        ], 200);
     }
 
-    public function resetPassword(Request $request)
+    public function resetPassword(ResetPasswordRequest $request)
     {
-        $request->validate([
-            'token' => 'required|string',
-            'email' => 'required|email',
-            'password' => ['required', 'confirmed', RulesPassword::defaults()],
-        ]);
+        $credentials = $request->validated();
+        $resetUser = null;
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+        try {
+            $status = Password::reset(
+                $credentials,
+                function ($user, $password) use (&$resetUser) {
 
-                event(new PasswordReset($user));
+                    $resetUser = $user;
+                    DB::transaction(function () use ($user, $password) {
+
+                        $user->forceFill([
+                            'password' => Hash::make($password),
+                            'remember_token' => Str::random(60),
+                        ])->save();
+
+                        $user->tokens()->delete();
+                    });
+                }
+            );
+
+            if ($status === Password::PASSWORD_RESET) {
+                try {
+                    if ($resetUser instanceof User) {
+
+                        event(new PasswordReset($resetUser));
+                    }
+                } catch (Exception $e) {
+                    Log::error('Failed to dispatch PasswordReset event.', [
+                        'exception' => $e->getMessage(),
+                    ]);
+                }
+                return response()->json(['message' => __($status)], 200);
+            } else {
+                return response()->json(['message' => __($status)], 422);
             }
-        );
+        } catch (Exception $e) {
+            Log::error('An unexpected error occurred while resetting the password.', [
+                'exception' => $e->getMessage(),
+            ]);
 
-        if ($status === Password::PASSWORD_RESET) {
-            return response()->json(['message' => __($status)], 200);
-        } else {
-            return response()->json(['message' => __($status)], 422);
+            return response()->json([
+                'message' => 'An unexpected error occurred while resetting the password.'
+            ], 500);
         }
     }
 }
