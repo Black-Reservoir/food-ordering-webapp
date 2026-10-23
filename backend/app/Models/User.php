@@ -17,7 +17,8 @@ class User extends Authenticatable implements MustVerifyEmail, CanResetPassword
     use HasApiTokens, HasFactory, Notifiable;
 
     const ROLE_CUSTOMER = 'customer';
-    const ROLE_RESTAURANT = 'restaurant';
+    const ROLE_RESTAURANT_OWNER = 'restaurant_owner';
+    const ROLE_DELIVERY_RIDER = 'delivery_rider';
     const ROLE_ADMIN = 'admin';
 
     /**
@@ -26,10 +27,11 @@ class User extends Authenticatable implements MustVerifyEmail, CanResetPassword
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
-        'role',
+        'address',
     ];
 
     /**
