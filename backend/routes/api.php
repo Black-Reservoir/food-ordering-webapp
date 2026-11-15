@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\VerifyEmailController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
@@ -20,6 +21,8 @@ Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']
 
 Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
     ->middleware(['signed'])->name('verification.verify');
+
+Route::get('/restaurants', [RestaurantController::class, 'index']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
@@ -51,4 +54,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/me', [ProfileController::class, 'show']);
     Route::patch('/me', [ProfileController::class, 'update']);
     Route::post('/me/profile-picture', [ProfileController::class, 'uploadProfilePicture']);
+
+    // Restaurant routes for authenticated users
+    Route::patch('/restaurants/{restaurant}', [RestaurantController::class, 'update']);
+    Route::post('/restaurants/{restaurant}', [RestaurantController::class, 'uploadImage']);
 });
