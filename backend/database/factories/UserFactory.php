@@ -24,10 +24,13 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
+            'email_verified_at' => null,
             'password' => static::$password ??= Hash::make('password'),
+            'address' => fake()->address(),
+            'role' => 'customer',
             'remember_token' => Str::random(10),
         ];
     }
@@ -37,8 +40,35 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    public function restaurantOwner(): Factory
+    {
+        return $this->state(function () {
+            return [
+                'role' => 'restaurant_owner'
+            ];
+        });
+    }
+
+    public function admin(): Factory
+    {
+        return $this->state(function () {
+            return [
+                'role' => 'admin',
+            ];
+        });
+    }
+
+    public function deliveryRider(): Factory
+    {
+        return $this->state(function () {
+            return [
+                'role' => 'delivery_rider',
+            ];
+        });
     }
 }
