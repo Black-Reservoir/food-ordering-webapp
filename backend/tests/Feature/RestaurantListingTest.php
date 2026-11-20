@@ -213,7 +213,7 @@ test('it should reject an invalid city parameter', function () {
 });
 
 test('it should reject an invalid search parameter', function () {
-    $response = $this->getJson('/api/restaurants?city[]=Imus');
+    $response = $this->getJson('/api/restaurants?search[]=');
 
     $response->assertStatus(422)->assertJsonValidationErrors(['search']);
 });

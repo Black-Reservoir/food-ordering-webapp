@@ -32,7 +32,7 @@ class VerifyEmailController extends Controller
     //     return response()->json(['message' => "Email verified successfully!"], 200);
     // }
 
-    public function verify(Request $request, $id, $hash)
+    public function verify(Request $request, int $id, string $hash)
     {
         $user = User::findOrFail($id);
 

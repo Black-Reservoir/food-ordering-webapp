@@ -71,4 +71,13 @@ class UserFactory extends Factory
             ];
         });
     }
+
+    public function customer(): Factory
+    {
+        return $this->state(function () {
+            return [
+                'role' => 'customer',
+            ];
+        });
+    }
 }
