@@ -4,15 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RestaurantIndexRequest;
+use App\Http\Requests\StoreRestaurantRequest;
 use App\Http\Requests\UpdateRestaurantRequest;
 use App\Http\Requests\UploadRestaurantImageRequest;
 use App\Http\Resources\RestaurantResource;
+use App\Http\Resources\UserResource;
 use App\Models\Restaurant;
+use App\Models\User;
 use Exception;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class RestaurantController extends Controller
 {
@@ -42,9 +46,40 @@ class RestaurantController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRestaurantRequest $request)
     {
-        //
+        $data = $request->validated();
+        $user = $request->user();
+        $imagePath = null;
+
+        try {
+            $data['user_id'] = $user->id;
+            $data['is_active'] = false;
+
+            if (isset($data['image'])) {
+                $imagePath = $data['image']->store('restaurants', 'public');
+                $data['image'] = $imagePath;
+            }
+            $restaurant = Restaurant::create($data);
+        } catch (Throwable $e) {
+            try {
+                if ($imagePath) {
+                    Storage::disk('public')->delete($imagePath);
+                }
+            } catch (Exception $deleteException) {
+                Log::error('Failed to delete restaurant image after creation failure.', [
+                    'image_path' => $imagePath,
+                    'error' => $deleteException->getMessage(),
+                ]);
+            }
+
+            throw $e;
+        }
+
+        return response()->json([
+            'message' => 'Restaurant created successfully.',
+            'restaurant' => new RestaurantResource($restaurant),
+        ], 201);
     }
 
     /**
@@ -103,7 +138,7 @@ class RestaurantController extends Controller
         try {
             $restaurant->image = $path;
             $restaurant->save();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             try {
                 $deleted = Storage::disk('public')->delete($path);
 

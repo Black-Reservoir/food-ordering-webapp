@@ -26,9 +26,11 @@ class RestaurantResource extends JsonResource
             'address' => $this->address,
             'city' => $this->city,
             'province' => $this->province,
+            'phone_number' => $this->phone_number,
             'image' => $this->image !== null
                 ? $publicDisk->url($this->image)
                 : null,
+            'is_active' => $this->is_active,
         ];
     }
 }

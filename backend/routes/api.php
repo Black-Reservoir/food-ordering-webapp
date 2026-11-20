@@ -5,8 +5,6 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\VerifyEmailController;
-use App\Http\Resources\UserResource;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -28,7 +26,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Authentication routes
     Route::post('/email/verification-notification', [VerifyEmailController::class, 'resend'])
-        ->middleware(['throttle:6,1'])->name('verification.send');;
+        ->middleware(['throttle:6,1'])->name('verification.send');
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -45,8 +43,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
 
         // Restaurant routes
-        Route::middleware('role:restaurant')->group(function () {
-            // Route::get('/restaurant/menu', [RestaurantController::class, 'menu']);
+        Route::middleware('role:restaurant_owner')->group(function () {
+            Route::post('/restaurants', [RestaurantController::class, 'store']);
+            Route::patch('/restaurants/{restaurant}', [RestaurantController::class, 'update']);
+            // Route::post('/restaurants/{restaurant}', [RestaurantController::class, 'uploadImage']);
         });
     });
 
@@ -54,8 +54,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/me', [ProfileController::class, 'show']);
     Route::patch('/me', [ProfileController::class, 'update']);
     Route::post('/me/profile-picture', [ProfileController::class, 'uploadProfilePicture']);
-
-    // Restaurant routes for authenticated users
-    Route::patch('/restaurants/{restaurant}', [RestaurantController::class, 'update']);
-    Route::post('/restaurants/{restaurant}', [RestaurantController::class, 'uploadImage']);
 });
